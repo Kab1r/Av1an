@@ -191,20 +191,16 @@ pub fn run_vmaf(
     filter.push(',');
   }
 
-  let vmaf = if let Some(model) = model {
-    format!(
-      "[distorted][ref]libvmaf=log_fmt='json':eof_action=endall:log_path={}:model_path={}:n_threads={}",
-      ffmpeg::escape_path_in_filter(stat_file),
-      ffmpeg::escape_path_in_filter(&model),
-      threads
-    )
-  } else {
-    format!(
-      "[distorted][ref]libvmaf=log_fmt='json':eof_action=endall:log_path={}:n_threads={}",
-      ffmpeg::escape_path_in_filter(stat_file),
-      threads
-    )
-  };
+  let vmaf = format!(
+    "[distorted][ref]libvmaf=log_fmt='json':eof_action=endall:log_path={}:n_threads={}{}",
+    ffmpeg::escape_path_in_filter(stat_file),
+    threads,
+    if let Some(model) = model {
+      format!(":model='path={}'", ffmpeg::escape_path_in_filter(&model))
+    } else {
+      "".into()
+    }
+  );
 
   let mut source_pipe = if let [cmd, args @ ..] = reference_pipe_cmd {
     let mut source_pipe = Command::new(cmd);
